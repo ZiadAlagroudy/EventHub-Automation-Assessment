@@ -124,16 +124,22 @@ npx playwright install chromium
 
 ### Environment Configuration
 
-Create a `.env` file in the project root using `.env.sample` as a reference.
+The repository includes two environment configuration files:
 
+- **`.env`** — An intentionally empty file included to satisfy the assessment submission requirements. No credentials or sensitive values are committed.
+- **`.env.sample`** — A template documenting the required environment variables and application URLs.
 
+Before running the tests, populate the local `.env` file with valid EventHub test account credentials:
+
+```dotenv
 EVENTHUB_EMAIL=your-account-email
 EVENTHUB_PASSWORD=your-account-password
 
 UI_BASE_URL=https://eventhub.rahulshettyacademy.com/
 API_BASE_URL=https://api.eventhub.rahulshettyacademy.com/api/
+```
 
-The `.env` file is excluded from version control to avoid exposing credentials.
+**Security Note:** The `.env` file in the public repository is intentionally empty. Credentials must not be committed or pushed to the repository. Test account credentials can be provided to authorized reviewers through a secure channel.
 
 ## 5. Running the Tests
 
@@ -339,7 +345,7 @@ The automation normalizes numeric values when comparing API prices.
 
 ## 11. Security and Test Data
 
-- Credentials are stored in environment variables and excluded from Git.
+- Credentials are supplied through local environment variables. The tracked .env file is intentionally empty, and no credentials are committed to the public repository.
 - Authentication tokens are managed by reusable fixtures.
 - Tests generate dedicated data instead of modifying unrelated records.
 - Created resources are cleaned up wherever possible.
