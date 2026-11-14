@@ -1,14 +1,13 @@
-
 import {
   test as base,
   expect,
   APIRequestContext
 } from '@playwright/test';
 
+import { config } from '../utils/config';
 import { AuthClient } from '../API/clients/authClients';
 
-const API_BASE_URL =
-  'https://api.eventhub.rahulshettyacademy.com/api/';
+const API_BASE_URL = config.apiBaseUrl;
 
 type ApiFixtures = {
   authenticatedRequest: APIRequestContext;

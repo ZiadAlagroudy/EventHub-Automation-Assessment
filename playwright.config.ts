@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import 'dotenv/config';
+import { config } from './utils/config';
 
 declare const process: { env: { CI?: string } };
 
@@ -28,7 +29,7 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'https://eventhub.rahulshettyacademy.com/', 
+    baseURL: config.uiBaseUrl,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

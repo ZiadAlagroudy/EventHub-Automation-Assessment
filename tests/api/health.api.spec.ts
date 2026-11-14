@@ -1,11 +1,8 @@
-
 import { test, expect } from '@playwright/test';
+import { config } from '../../utils/config';
 
 test('API Health Check', async ({ request }) => {
-  const response = await request.get('health');
-
-  console.log('URL:', response.url());
-  console.log('Status:', response.status());
+  const response = await request.get(`${config.apiBaseUrl}health`);
 
   expect(response.status()).toBe(200);
 });

@@ -1,4 +1,3 @@
-
 import { test, expect } from '../../fixtures/uiFixtures';
 
 test('User can access EventHub after authentication', async ({authenticatedPage}) => {

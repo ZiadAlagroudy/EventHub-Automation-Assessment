@@ -1,4 +1,3 @@
-
 import { test, expect } from '../../fixtures/testFixtures';
 
 import { EventsClient } from '../../API/clients/EventsClient';
@@ -53,8 +52,6 @@ test('User can book tickets and cancel the booking', async ({
 
     // STEP 5: Confirm booking and capture reference
     const bookingReference = await eventPage.confirmBooking();
-
-    console.log('Booking Reference:', bookingReference);
 
     // STEP 6: Verify booking through API
     const bookingResponse =
@@ -111,16 +108,36 @@ test('User can book tickets and cancel the booking', async ({
     console.log('UI Booking E2E Test completed successfully');
 
   } finally {
-    // Cleanup: cancel booking if test failed before cancellation
+  // Attempt booking cleanup independently
+  try {
     if (bookingId !== undefined) {
-      await bookingsClient.cancelBooking(bookingId);
-    }
+      const response = await bookingsClient.cancelBooking(bookingId);
 
-    // Cleanup: delete event created by this test
-    if (eventId !== undefined) {
-      await eventsClient.deleteEvent(eventId);
+      if (!response.ok()) {
+        console.warn(
+          `Booking cleanup failed. Status: ${response.status()}`
+        );
+      }
     }
+  } catch (error) {
+    console.warn('Booking cleanup error:', error);
   }
+
+  // Always attempt event cleanup
+  try {
+    if (eventId !== undefined) {
+      const response = await eventsClient.deleteEvent(eventId);
+
+      if (!response.ok()) {
+        console.warn(
+          `Event cleanup failed. Status: ${response.status()}`
+        );
+      }
+    }
+  } catch (error) {
+    console.warn('Event cleanup error:', error);
+  }
+}
 
 });
 
@@ -136,7 +153,7 @@ test('Booking with invalid email', async ({
   let eventId: number | undefined;
 
   try {
-    // Arrange: Create an isolated event
+    // Create an isolated event
     const createResponse = await eventsClient.createEvent(eventData);
     expect(createResponse.status()).toBe(201);
 
@@ -146,7 +163,7 @@ test('Booking with invalid email', async ({
     const eventPage = new EventPage(authenticatedPage);
     await eventPage.goto(eventId!);
 
-    // Act: Enter invalid customer email
+    // Enter invalid customer email
     await eventPage.fillCustomerDetails(
       'Automation Test User',
       'invalid-email',
@@ -160,12 +177,12 @@ test('Booking with invalid email', async ({
     // Verify email validation message
     await eventPage.verifyInvalidEmailMessage();
 
-    // Assert: Booking should not be confirmed
+    // Booking should not be confirmed
     await expect(
       authenticatedPage.getByText(/Booking Confirmed!/)
     ).toHaveCount(0);
 
-    // Assert: No booking should have been created for this event
+    // No booking should have been created for this event
     const bookingsResponse = await bookingsClient.getBookings();
     expect(bookingsResponse.status()).toBe(200);
 
@@ -201,7 +218,7 @@ test('Ticket quantity boundaries', async ({
   let eventId: number | undefined;
 
   try {
-    // Arrange: Create an event with enough available seats
+    // Create an event with enough available seats
     const createResponse = await eventsClient.createEvent(eventData);
     expect(createResponse.status()).toBe(201);
 
@@ -210,7 +227,7 @@ test('Ticket quantity boundaries', async ({
 
     await eventPage.goto(eventId!);
 
-    // Minimum boundary: quantity starts at 1
+    // Quantity starts at 1
     await expect(eventPage.ticketCount).toHaveText('1');
 
     // Attempt to decrease below minimum
@@ -246,7 +263,7 @@ test('Booking with empty required fields', async ({
   let eventId: number | undefined;
 
   try {
-    // Arrange: Create a new event
+    // Create a new event
     const createResponse = await eventsClient.createEvent(eventData);
     expect(createResponse.status()).toBe(201);
 
@@ -255,18 +272,18 @@ test('Booking with empty required fields', async ({
 
     await eventPage.goto(eventId!);
 
-    // Act: Submit booking with empty customer fields
+    // Submit booking with empty customer fields
     await eventPage.confirmBookingButton.click();
 
-    // Assert: All three validation messages should appear
+    // All three validation messages should appear
     await eventPage.verifyRequiredFieldsValidation();
 
-    // Assert: Booking should not be confirmed
+    // Booking should not be confirmed
     await expect(
       authenticatedPage.getByText(/Booking Confirmed!/)
     ).toHaveCount(0);
 
-    // Assert: User remains on booking form
+    // User remains on booking form
     await expect(eventPage.confirmBookingButton).toBeVisible();
 
   } finally {
@@ -291,14 +308,14 @@ test('Booking remains active when user dismisses cancellation', async ({
   let bookingId: number | undefined;
 
   try {
-    // STEP 1: Create event via API
+    // Create event via API
     const eventResponse = await eventsClient.createEvent(eventData);
     expect(eventResponse.status()).toBe(201);
 
     const eventBody = await eventResponse.json();
     eventId = eventBody.data.id;
 
-    // STEP 2: Create booking via API
+    // Create booking via API
     const bookingResponse = await bookingsClient.createBooking({
       eventId: eventId!,
       customerName: 'Automation Test User',
@@ -314,28 +331,21 @@ test('Booking remains active when user dismisses cancellation', async ({
 
     const bookingReference = bookingBody.data.bookingRef;
 
-    // STEP 3: Navigate to My Bookings
-    //await authenticatedPage.goto('/my-bookings');
-
-    // STEP 3: Navigate to My Bookings
+    // Navigate to My Bookings
       await authenticatedPage.goto('/');
       await authenticatedPage.getByTestId('nav-bookings').click();
-      console.log('Current URL:', authenticatedPage.url())
-      console.log('Booking Reference:', bookingReference);
-      console.log('Visible booking cards:',
-      await authenticatedPage.getByTestId('booking-card').count());
-      console.log('Page content:',(await authenticatedPage.locator('body').innerText()).slice(0, 1500));
-    // STEP 4: Verify booking is displayed
+      
+    // Verify booking is displayed
     await myBookingsPage.verifyBooking(
       bookingReference,
       eventData.title,
       eventData.price * 2
     );
 
-    // STEP 5: Click Cancel Booking, then dismiss confirmation
+    // Click Cancel Booking, then dismiss confirmation
     await myBookingsPage.dismissCancellation(bookingReference);
 
-    // STEP 6: Verify booking still exists in API
+    // Verify booking still exists in API
     const bookingAfterDismiss =
       await bookingsClient.getBookingById(bookingId!);
 
@@ -349,7 +359,7 @@ test('Booking remains active when user dismisses cancellation', async ({
 
     expect(bookingAfterDismissBody.data.status).toBe('confirmed');
 
-    // STEP 7: Verify seats are still reserved
+    // Verify seats are still reserved
     const eventAfterDismiss = await eventsClient.getEvent(eventId!);
     expect(eventAfterDismiss.status()).toBe(200);
 
@@ -359,17 +369,37 @@ test('Booking remains active when user dismisses cancellation', async ({
       eventData.totalSeats - 2
     );
 
-  } finally {
-    // Cleanup booking
+  }  finally {
+  // Cleanup booking independently
+  try {
     if (bookingId !== undefined) {
-      await bookingsClient.cancelBooking(bookingId);
-    }
+      const response = await bookingsClient.cancelBooking(bookingId);
 
-    // Cleanup event
-    if (eventId !== undefined) {
-      await eventsClient.deleteEvent(eventId);
+      if (!response.ok()) {
+        console.warn(
+          `Booking cleanup failed. Status: ${response.status()}`
+        );
+      }
     }
+  } catch (error) {
+    console.warn('Booking cleanup error:', error);
   }
+
+  // Always attempt event cleanup
+  try {
+    if (eventId !== undefined) {
+      const response = await eventsClient.deleteEvent(eventId);
+
+      if (!response.ok()) {
+        console.warn(
+          `Event cleanup failed. Status: ${response.status()}`
+        );
+      }
+    }
+  } catch (error) {
+    console.warn('Event cleanup error:', error);
+  }
+}
 });
 
 

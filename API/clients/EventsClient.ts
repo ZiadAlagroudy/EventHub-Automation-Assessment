@@ -1,4 +1,3 @@
-
 import { APIRequestContext, APIResponse } from '@playwright/test';
 
 export interface CreateEventRequest {
