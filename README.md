@@ -42,6 +42,7 @@ The automation covers:
 
 The framework separates test scenarios from UI interactions, API operations, authentication, configuration, and test data generation.
 
+```text
 EventHub Automation
 ├── API/
 │   └── clients/
@@ -58,14 +59,23 @@ EventHub Automation
 │   └── myBookingsPage.ts
 ├── tests/
 │   ├── api/
+│   │   ├── authentication.api.spec.ts
+│   │   ├── booking.api.spec.ts
+│   │   ├── events.api.spec.ts
+│   │   └── health.api.spec.ts
 │   └── ui/
+│       ├── auth.ui.spec.ts
+│       └── booking.ui.spec.ts
 ├── utils/
 │   ├── config.ts
 │   └── testData.ts
 ├── .env.sample
-├── playwright.config.ts
+├── .gitignore
 ├── package.json
+├── playwright.config.ts
+├── tsconfig.json
 └── README.md
+```
 
 ### Architectural Decisions
 
