@@ -1,19 +1,22 @@
 {
-  "name": "eventhub-automation-task-v1",
+  "name": "eventhub-qa-automation",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "private": true,
+  "description": "Scalable UI and API test automation framework for EventHub using Playwright and TypeScript.",
+  "scripts": {
+    "test": "playwright test --workers=1",
+    "test:api": "playwright test tests/api --workers=1",
+    "test:ui": "playwright test tests/ui --workers=1",
+    "test:report": "playwright show-report",
+    "test:list": "playwright test --list",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
-    "@types/node": "^26.6.6"
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "dotenv": "^18.0.10",
-    "typescript": "^7.0.2"
+    "dotenv": "^18.0.10"
   }
 }
